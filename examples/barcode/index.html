@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Barcode example</title>
+  <style>body{font:16px system-ui;max-width:720px;margin:2rem auto;padding:0 1rem}video{display:block;width:100%;background:#111;border-radius:8px}button{margin:.5rem .5rem 0 0;padding:.6rem 1rem}#status{min-height:1.5rem}.result{font-size:1.3rem;font-weight:700}fieldset{margin-top:1.5rem}label{display:grid;grid-template-columns:10rem 1fr 5rem;gap:.75rem;align-items:center;margin:.75rem 0}output{font-variant-numeric:tabular-nums}</style>
+</head>
+<body>
+  <p><a href="/camera">Camera example</a></p>
+  <h1>Barcode scanner</h1>
+  <video id="video" autoplay muted playsinline></video>
+  <button id="start">Start scanner</button><button id="once">Scan once</button><button id="stop">Stop</button>
+  <p id="status" role="status"></p><p class="result" id="result"></p>
+  <fieldset id="camera-controls" hidden>
+    <legend>Camera settings</legend>
+    <p>Available controls are reported by the active camera and browser.</p>
+    <div id="camera-settings"></div>
+  </fieldset>
+  <script type="module" src="/examples/barcode/main.js"></script>
+</body>
+</html>

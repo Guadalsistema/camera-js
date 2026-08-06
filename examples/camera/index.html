@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Camera example</title>
+  <style>body{font:16px system-ui;max-width:720px;margin:2rem auto;padding:0 1rem}video{display:block;width:100%;background:#111;border-radius:8px}button{margin:.5rem .5rem 0 0;padding:.6rem 1rem}#photo{max-width:100%;margin-top:1rem}#status{min-height:1.5rem}</style>
+</head>
+<body>
+  <p><a href="/barcode">Barcode example</a></p>
+  <h1>Camera</h1>
+  <video id="video" autoplay muted playsinline></video>
+  <button id="start">Start camera</button><button id="photo-button" disabled>Take photo</button><button id="stop">Stop</button>
+  <p id="status" role="status"></p>
+  <img id="photo" alt="Captured photo">
+  <script type="module" src="/examples/camera/main.js"></script>
+</body>
+</html>
