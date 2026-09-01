@@ -10,8 +10,8 @@ Small, framework-independent browser camera and barcode utilities.
 - Native `BarcodeDetector` scanning with `@zxing/browser` fallback
 
 Native detection is preferred when available. Browsers without
-`BarcodeDetector` load `@zxing/browser` from `esm.sh` automatically. The
-fallback therefore requires network access to the CDN.
+`BarcodeDetector` use the locally installed `@zxing/browser` fallback; barcode
+scanning does not load code from a CDN or require network access.
 
 ## Public API
 
@@ -42,6 +42,12 @@ const settings = await camera.applyConstraints({
 // Barcode operations
 const scanner = new BarcodeScannerController();
 const result = await scanner.scanOnce({ videoElement });
+
+await scanner.start({
+  videoElement,
+  onCode: (code) => console.log(code.value),
+  onError: (error) => console.error('Scanner runtime error', error),
+});
 
 // Media helpers
 const devices = await listVideoInputDevices();
@@ -78,7 +84,7 @@ docker build -t camera-js .
 docker run --rm -p 8080:8080 camera-js
 ```
 
-The barcode page works with native `BarcodeDetector` or the ZXing CDN fallback.
+The barcode page works with native `BarcodeDetector` or the local ZXing fallback.
 
 ## Development
 
