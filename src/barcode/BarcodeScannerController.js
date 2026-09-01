@@ -124,8 +124,7 @@ export class BarcodeScannerController {
 
   /** @private @param {HTMLVideoElement} videoElement @returns {Promise<void>} */
   async _startZXing(videoElement) {
-    // Import ZXing library directly instead of CDN
-    const { BrowserMultiFormatReader } = await import('@zxing/library');
+    const { BrowserMultiFormatReader } = await import('@zxing/browser');
     const reader = new BrowserMultiFormatReader();
     this._zxingControls = await reader.decodeFromVideoElement(videoElement, (result) => {
       if (!result || !this._onCode || this._state !== 'running') return;
@@ -140,8 +139,7 @@ export class BarcodeScannerController {
 
   /** @private @param {HTMLVideoElement} videoElement @param {number} timeoutMs @returns {Promise<BarcodeResult>} */
   async _scanOnceZXing(videoElement, timeoutMs) {
-    // Import ZXing library directly instead of CDN
-    const { BrowserMultiFormatReader } = await import('@zxing/library');
+    const { BrowserMultiFormatReader } = await import('@zxing/browser');
     const reader = new BrowserMultiFormatReader();
     return new Promise((resolve, reject) => {
       let settled = false;

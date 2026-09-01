@@ -17,6 +17,7 @@
     "serve": "node examples/server.js"
   },
   "dependencies": {
+    "@zxing/browser": "^0.2.1",
     "@zxing/library": "^0.23.0"
   },
   "devDependencies": {
