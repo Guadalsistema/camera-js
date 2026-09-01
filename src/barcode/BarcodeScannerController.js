@@ -1,7 +1,5 @@
 import { BarcodeScannerError, BarcodeStoppedError, BarcodeTimeoutError, BarcodeUnsupportedError } from './BarcodeError.js';
 
-const ZXING_URL = 'https://esm.sh/@zxing/browser@0.1.5';
-
 /**
  * @typedef {import('./types.js').BarcodeLifecycleState} BarcodeLifecycleState
  * @typedef {import('./types.js').BarcodeStartOptions} BarcodeStartOptions
@@ -126,7 +124,8 @@ export class BarcodeScannerController {
 
   /** @private @param {HTMLVideoElement} videoElement @returns {Promise<void>} */
   async _startZXing(videoElement) {
-    const { BrowserMultiFormatReader } = await loadZXing();
+    // Import ZXing library directly instead of CDN
+    const { BrowserMultiFormatReader } = await import('@zxing/library');
     const reader = new BrowserMultiFormatReader();
     this._zxingControls = await reader.decodeFromVideoElement(videoElement, (result) => {
       if (!result || !this._onCode || this._state !== 'running') return;
@@ -141,7 +140,8 @@ export class BarcodeScannerController {
 
   /** @private @param {HTMLVideoElement} videoElement @param {number} timeoutMs @returns {Promise<BarcodeResult>} */
   async _scanOnceZXing(videoElement, timeoutMs) {
-    const { BrowserMultiFormatReader } = await loadZXing();
+    // Import ZXing library directly instead of CDN
+    const { BrowserMultiFormatReader } = await import('@zxing/library');
     const reader = new BrowserMultiFormatReader();
     return new Promise((resolve, reject) => {
       let settled = false;
@@ -182,11 +182,6 @@ export class BarcodeScannerController {
       });
     });
   }
-}
-
-/** @returns {Promise<{ BrowserMultiFormatReader: new () => { decodeFromVideoElement(video: HTMLVideoElement, callback: ZXingCallback): Promise<ZXingControlsLike> } }>} */
-function loadZXing() {
-  return import(/* @vite-ignore */ ZXING_URL);
 }
 
 /** @typedef {{ detect(video: HTMLVideoElement): Promise<Array<{rawValue: string, format: string}>> }} BarcodeDetectorLike */
