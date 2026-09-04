@@ -64,6 +64,66 @@ describe('BarcodeScannerController', () => {
     expect(zxing.reset).toHaveBeenCalled();
   });
 
+  test.each(['ChecksumException', 'FormatException'])('ignores routine ZXing %s frame misses', async (name) => {
+    const onCode = vi.fn();
+    const onError = vi.fn();
+    const scanner = new BarcodeScannerController();
+    await scanner.start({ videoElement: {}, onCode, onError, preferredEngine: 'zxing' });
+
+    zxing.callback(undefined, { name }, zxing.controls);
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(scanner.state).toBe('running');
+    scanner.stop();
+  });
+
+  test('classifies renamed ZXing misses through getKind and constructor kind', async () => {
+    const onCode = vi.fn();
+    const onError = vi.fn();
+    const scanner = new BarcodeScannerController();
+    await scanner.start({ videoElement: {}, onCode, onError, preferredEngine: 'zxing' });
+
+    const renamed = { name: 'BundledNotFoundError', getKind: () => 'NotFoundException' };
+    class CrossBundleError {}
+    CrossBundleError.kind = 'ChecksumException';
+    zxing.callback(undefined, renamed, zxing.controls);
+    zxing.callback(undefined, Object.assign(new CrossBundleError(), { name: 'UnrelatedError' }), zxing.controls);
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(scanner.state).toBe('running');
+    scanner.stop();
+  });
+
+  test('falls through throwing or non-string getKind to later discriminators', async () => {
+    const onCode = vi.fn();
+    const onError = vi.fn();
+    const scanner = new BarcodeScannerController();
+    await scanner.start({ videoElement: {}, onCode, onError, preferredEngine: 'zxing' });
+
+    zxing.callback(undefined, { getKind: () => { throw new Error('broken kind'); }, name: 'FormatException' }, zxing.controls);
+    zxing.callback(undefined, { getKind: () => 42, name: 'NotFoundException' }, zxing.controls);
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(scanner.state).toBe('running');
+    scanner.stop();
+  });
+
+  test('wraps unknown ZXing callback errors and continues scanning', async () => {
+    const onCode = vi.fn();
+    const onError = vi.fn();
+    const scanner = new BarcodeScannerController();
+    await scanner.start({ videoElement: {}, onCode, onError, preferredEngine: 'zxing' });
+    const unknown = new Error('decoder failed');
+
+    zxing.callback(undefined, unknown, zxing.controls);
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ name: 'BarcodeScannerError', cause: unknown }));
+    expect(scanner.state).toBe('running');
+
+    zxing.callback({ getText: () => '789', getBarcodeFormat: () => 'QR_CODE' }, undefined, zxing.controls);
+    expect(onCode).toHaveBeenCalledWith({ value: '789', format: 'qr_code', rawFormat: 'qr_code', source: 'zxing' });
+    scanner.stop();
+  });
+
   test('rejects a ZXing startup failure and returns to idle', async () => {
     zxing.decodeError = new Error('startup failed');
     const scanner = new BarcodeScannerController();

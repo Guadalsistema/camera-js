@@ -12,6 +12,9 @@ Small, framework-independent browser camera and barcode utilities.
 Native detection is preferred when available. Browsers without
 `BarcodeDetector` use the locally installed `@zxing/browser` fallback; barcode
 scanning does not load code from a CDN or require network access.
+Routine ZXing per-frame decode misses (`NotFoundException`, `ChecksumException`,
+and `FormatException`) are excluded from `onError`; other scanner failures are
+reported there while continuous scanning remains active.
 
 ## Public API
 

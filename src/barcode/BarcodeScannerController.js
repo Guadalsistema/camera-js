@@ -150,7 +150,8 @@ export class BarcodeScannerController {
     const reader = new BrowserMultiFormatReader(createHints(formats));
     this._zxingReader = /** @type {ZXingReaderLike} */ (reader);
     this._zxingControls = await reader.decodeFromVideoElement(videoElement, (result, error) => {
-      if (error && error.name !== 'NotFoundException') {
+      // ZXing reports ordinary per-frame misses through this callback.
+      if (error && !isRetryableZXingMiss(error)) {
         this._reportError(toScannerError(error, 'ZXing barcode detection failed'));
       }
       if (!result || !this._onCode || this._state !== 'running') return;
@@ -221,6 +222,46 @@ export class BarcodeScannerController {
 /** @typedef {{ reset?(): void }} ZXingReaderLike */
 /** @typedef {{ getText(): string, getBarcodeFormat(): unknown }} ZXingResultLike */
 /** @typedef {(result: ZXingResultLike | undefined, error: unknown | undefined, controls: ZXingControlsLike) => void} ZXingCallback */
+
+/**
+ * Routine ZXing frame misses are deliberately excluded from the onError callback.
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+function isRetryableZXingMiss(error) {
+  const kind = getZXingErrorDiscriminator(error);
+  return kind === 'NotFoundException' || kind === 'ChecksumException' || kind === 'FormatException';
+}
+
+/**
+ * @param {unknown} error
+ * @returns {string | undefined}
+ */
+function getZXingErrorDiscriminator(error) {
+  const candidate = /** @type {Record<string, unknown> | null | undefined} */ (error);
+  try {
+    const getKind = candidate?.getKind;
+    if (typeof getKind === 'function') {
+      const kind = getKind.call(error);
+      if (typeof kind === 'string') return kind;
+    }
+  } catch {
+    // Try the next discriminator when a foreign error implementation is unsafe.
+  }
+  try {
+    const kind = /** @type {Record<string, unknown> | undefined} */ (candidate?.constructor)?.kind;
+    if (typeof kind === 'string') return kind;
+  } catch {
+    // Try the name when constructor metadata is unavailable.
+  }
+  try {
+    const name = candidate?.name;
+    if (typeof name === 'string') return name;
+  } catch {
+    // An unreadable name is not a retryable miss.
+  }
+  return undefined;
+}
 
 /** @param {string[]} [formats] @returns {BarcodeDetectorLike} */
 function createDetector(formats) {

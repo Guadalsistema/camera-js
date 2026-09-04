@@ -18,7 +18,7 @@
  * @typedef {Object} BarcodeStartOptions
  * @property {HTMLVideoElement} videoElement
  * @property {(result: BarcodeResult) => void} onCode
- * @property {(error: BarcodeError) => void} [onError]
+ * @property {(error: BarcodeError) => void} [onError] Runtime failures only; routine ZXing per-frame misses are excluded.
  * @property {MediaStream} [stream]
  * @property {string[]} [formats]
  * @property {number} [duplicateDelayMs]
