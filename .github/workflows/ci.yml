@@ -28,3 +28,29 @@ jobs:
 
       - name: Verify package
         run: npm run lint && npm run typecheck && npm test -- --run
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          VERSION=$(grep '"version"' package.json | cut -d '"' -f 4)
+          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd
+        with:
+          tag: ${{ steps.get_version.outputs.tag }}
+          commit: ${{ github.sha }}
+          generateReleaseNotes: true
+          skipIfReleaseExists: false
+          allowUpdates: false
